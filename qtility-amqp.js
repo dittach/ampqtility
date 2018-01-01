@@ -17,10 +17,12 @@ program
   .option('-l, --login <login_name>', 'Login Name')
   .option('-x, --password <password>', 'Password')
   .option('-o, --op <op>', 'Operation', /^(persist|movequeues)$/i, 'persist')
+  .option('-s, --sourcequeue <sourcequeue>', 'Source Queue Name')
+  .option('-d, --destqueue <destqueue>', 'Dest Queue Name')
   .parse(process.argv);
 
-var amqp = require('./lib/amqp');
-var amqpSettings = require('./config/amqp_config.js');
+const amqp = require('./lib/amqp');
+const amqpSettings = require('./config/amqp_config.js');
 
 _.extend(amqpSettings, {
   host: program.host,
@@ -37,24 +39,92 @@ if (amqpSettings.vhost.length === 0) missing_options.push("vhost");
 if (amqpSettings.login.length === 0) missing_options.push("login");
 if (amqpSettings.password.length === 0) missing_options.push("password");
 if (program.op.length === 0) missing_options.push("op");
+if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 
-// if persist, check those params. If movequeues, check those.
+if (program.op === "persist" && program.tempqueue.length === 0) { missing_options.push("tempqueue"); }
+if (program.op === "movequeues" && program.destqueue.length === 0) { missing_options.push("destqueue"); }
 
 if (missing_options.length > 0) {
     console.error("required options:", missing_options.join(", "));
     process.exit();
 }
 
+const timestamp = Date.now().toString();
+const tempqueue = 'qtility.temp.' + timestamp;
+const exchangeOptions = {
+  type: 'topic',
+  durable: true,
+  autoDelete: false,
+  confirm: true
+};
+
+
 require('./lib/amqp')(app, amqpSettings);
-
-
 
 amqp(app, amqpSettings).connect(function(){
     if (process.send) process.send('online');
 //do stuff
 
+    createTempQueue(function(){
+      if (program.op === "persist") {
+        handlePersist();
+      } else if (program.op === "movequeues") {
+        //sourcequeue
+        //destqueue
+      }
+  
+    });
+
     app.ready = true;
 });
+
+function handlePersist() {
+      app.amqpHelpers.subscribeDirect(program.sourcequeue, function(error, content, message){
+        if (error) return app.amqp.reject(message);
+
+        if (!content.body){
+          console.log("malformed message received on", program.sourcequeue, content, message);
+          return app.amqp.reject(message);
+        }
+
+        console.log("received new", program.sourcequeue);
+        
+        var messageOptions = {
+          mandatory: true,
+          contentType: 'application/json',
+          deliveryMode: 2 // persistent
+        };
+
+        if (message.properties!==null) {
+          _.extend(messageOptions, message.properties);
+        }
+        try {
+          app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions );
+        } catch(e) {
+          console.log("qtility", "Unable to publish on", tempqueue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
+        }
+      });
+}
+
+function createTempQueue(callback) {
+  app.amqp.assertExchange(tempqueue, exchangeOptions.type).then(function(ex){
+    app.amqp.assertQueue(queueName, {
+      durable: true,
+      autoDelete: false,
+      confirm: true
+    }).then(function(q){
+      app.amqp.bindQueue(tempqueue,tempqueue,exchangeBindings).then(function() {
+        console.log('qtility','queue',tempqueue,'bound successfully on exchange', tempqueue, exchangeBindings);
+      }).catch(function(err){
+        console.log('qtility','error during queue setup', err);
+        callback(err);
+      });
+    });
+  });
+
+  callback(null);
+}
+
 
 process.on('SIGTERM', cleanupAndShutdown);
 process.on('SIGINT',  cleanupAndShutdown);

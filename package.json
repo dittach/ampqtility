@@ -1,15 +1,17 @@
 {
-  "name": "ampqtility",
-  "version": "1.0.0",
-  "main": "ampqtility.js",
+  "name": "qtility-amqp",
+  "version": "0.0.1",
+  "main": "qtility-amqp.js",
   "scripts": {
     "test": "node test.js"
   },
   "dependencies": {
     "amqplib": "*",
-    "async": "*",
-    "request": "*",
-    "underscore": "*"
+    "async": "~2.6.0",
+    "commander": "~2.12.2",
+    "lodash": "~4.17.4",
+    "request": "~2.83.0",
+    "when": "*"
   },
   "optionalDependencies": {},
   "devDependencies": {

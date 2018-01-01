@@ -16,6 +16,7 @@ program
   .option('-v, --vhost <vhost>', 'Vhost')
   .option('-l, --login <login_name>', 'Login Name')
   .option('-x, --password <password>', 'Password')
+  .option('-o, --op <op>', 'Operation', /^(persist|movequeues)$/i, 'persist')
   .parse(process.argv);
 
 var amqp = require('./lib/amqp');
@@ -35,6 +36,9 @@ if (amqpSettings.port === 0) missing_options.push("port");
 if (amqpSettings.vhost.length === 0) missing_options.push("vhost");
 if (amqpSettings.login.length === 0) missing_options.push("login");
 if (amqpSettings.password.length === 0) missing_options.push("password");
+if (program.op.length === 0) missing_options.push("op");
+
+// if persist, check those params. If movequeues, check those.
 
 if (missing_options.length > 0) {
     console.error("required options:", missing_options.join(", "));
@@ -42,6 +46,8 @@ if (missing_options.length > 0) {
 }
 
 require('./lib/amqp')(app, amqpSettings);
+
+
 
 amqp(app, amqpSettings).connect(function(){
     if (process.send) process.send('online');

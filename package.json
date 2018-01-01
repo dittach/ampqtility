@@ -1,0 +1,20 @@
+{
+  "name": "mail_crawler",
+  "version": "1.0.0",
+  "main": "ampqtility.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "amqplib": "*",
+    "async": "*",
+    "request": "*",
+    "underscore": "*"
+  },
+  "optionalDependencies": {},
+  "devDependencies": {
+    "faker": "~2.1.2",
+    "sinon": "~1.12.2",
+    "mocha": "~1.21.5"
+  }
+}

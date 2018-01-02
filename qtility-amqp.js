@@ -179,18 +179,43 @@ function endWhenEmpty() {
 
     if (messageCount===0) {
       if (queuePoll!==undefined) { clearInterval(queuePoll); }
-      moveItemsBack();
+
+      // unsubscribe from the source queue
+      unsubscribeFromQueueAndExchange(program.sourcequeue, moveItemsBack);
       //cleanupAndShutdown();
     }
   });
 }
 
-function moveItemsBack() {
-  // subscribe to tempqueue as a consumer
-  subscribeToTempQueue(function(){
+function unsubscribeFromQueueAndExchange(queueName, callback) {
+  app.amqp.unbindQueue(queueName, queueName, exchangeBindings, null, function(err, ok) {
+    if (err) {
+      callback(err);
+    } else {
+      app.amqp.unbindExchange(queueName, queueName, exchangeBindings, null, function(err, ok){
+        if (err) {
+          callback(err);
+        } else {
+          callback();
+        }
+      });
+    }
+    
 
   });
-  // publish back to source
+}
+
+function moveItemsBack(err) {
+  // subscribe to tempqueue as a consumer
+  if (err) {
+    console.log('Unable to unsubscribe from source queue', program.sourcequeue);
+    cleanupAndShutdown();
+  } else {
+    subscribeToTempQueue(function() {
+
+    });
+  }
+
 }
 
 

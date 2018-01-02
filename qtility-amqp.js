@@ -10,7 +10,7 @@ const async = require('async');
 var queuePoll;
 var app = Object;
 
-var enableDebugMsgs = false;
+var enableDebugMsgs = true;
 var modName = 'qtility-amqp.js:';
 
 program
@@ -204,11 +204,17 @@ function endWhenEmpty() {
 }
 
 function unsubscribeFromQueueAndExchange(queueName, callback) {
+  var debugThisFunction = true;
+  var fName = 'unsubscribeFromQueueAndExchange():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
   app.amqp.unbindQueue(queueName, queueName, exchangeBindings, null, function(err, ok) {
+    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindQueue()', err, ok); }
     if (err) {
       callback(err);
     } else {
-      app.amqp.unbindExchange(queueName, queueName, exchangeBindings, null, function(err, ok){
+      app.amqp.unbindExchange(queueName, queueName, exchangeBindings, null, function(err, ok) {
+        if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindExchange()', err, ok); }
         if (err) {
           callback(err);
         } else {

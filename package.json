@@ -17,6 +17,6 @@
   "devDependencies": {
     "faker": "~2.1.2",
     "sinon": "~1.12.2",
-    "mocha": "~1.21.5"
+    "mocha": "*"
   }
 }

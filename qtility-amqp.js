@@ -105,11 +105,13 @@ function handlePersist() {
     }
 
     if (messageCount>0) {
-      
+
       try {
         app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+        app.amqp.ack(message, false);
       } catch (e) {
         console.log("qtility", "Unable to publish on", tempqueue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
+        app.amqp.reject(message);
       }
 
     }

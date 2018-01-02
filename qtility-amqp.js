@@ -102,6 +102,7 @@ function handlePersist() {
     if (message.properties !== null) {
       _.extend(messageOptions, message.properties);
     }
+    isQueueEmpty();
     /*
     try {
       app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
@@ -128,6 +129,11 @@ function createTempQueue(callback) {
   });
 
   callback(null);
+}
+
+function isQueueEmpty(queueName) {
+  var queueResult = app.amqp.assertQueue(queueName, {durable: true,autoDelete: false});
+  console.log('queueResult:',queueResult);
 }
 
 

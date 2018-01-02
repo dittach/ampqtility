@@ -179,6 +179,11 @@ process.on('message', function (message) {
 });
 
 function cleanupAndShutdown() {
+
+// delete temp queue and exchange
+  //app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
+  //app.amqp.deleteExchange(tempqueue);
+
   // cleanly disconnect from AMQP
   app.amqp.close();
 

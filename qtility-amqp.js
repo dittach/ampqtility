@@ -7,6 +7,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const async = require('async');
 
+var queuePoll;
 var app = Object;
 
 program
@@ -85,6 +86,10 @@ amqp(app, amqpSettings).connect(function () {
 function handlePersist() {
   app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message, messageCount) {
     if (error) return app.amqp.reject(message);
+
+    if (queuePoll===undefined) {
+      queuePoll = setTimeout(endWhenEmpty, 5000);
+    }
 
     if (!content) {
       console.log("malformed message received on", program.sourcequeue, content, message);
@@ -165,8 +170,12 @@ function getQueueCount(queueName, emptyCallback) {
       callback(results.messageCount);
     });
   }
+}
 
-
+function endWhenEmpty() {
+  getQueueCount(program.sourcequeue, function(messageCount){
+    console.log('endWhenEmpty(), messageCount:', messageCount);
+  });
 }
 
 

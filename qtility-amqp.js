@@ -41,7 +41,6 @@ if (amqpSettings.password.length === 0) missing_options.push("password");
 if (program.op.length === 0) missing_options.push("op");
 if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 
-if (program.op === "persist" && program.tempqueue.length === 0) { missing_options.push("tempqueue"); }
 if (program.op === "movequeues" && program.destqueue.length === 0) { missing_options.push("destqueue"); }
 
 if (missing_options.length > 0) {

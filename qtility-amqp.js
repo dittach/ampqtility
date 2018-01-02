@@ -88,7 +88,7 @@ function handlePersist() {
     if (error) return app.amqp.reject(message);
 
     if (queuePoll===undefined) {
-      queuePoll = setTimeout(endWhenEmpty, 5000);
+      queuePoll = setInterval(endWhenEmpty, 5000);
     }
 
     if (!content) {
@@ -154,7 +154,7 @@ function getQueueCount(queueName, emptyCallback) {
     emptyCallback(result);
   });
 
-  function buildDefaults(connection, callback) {
+  function buildDefaults(callback) {
     callback(null, _.extend({
       durable: true,
       autoDelete: false
@@ -167,6 +167,7 @@ function getQueueCount(queueName, emptyCallback) {
 
   function isEmpty(ok, callback) {
     ok.then(function(results) {
+      console.log('results:', results);
       callback(results.messageCount);
     });
   }
@@ -188,7 +189,7 @@ process.on('message', function (message) {
 });
 
 function cleanupAndShutdown() {
-    clearTimeout(queuePoll);
+  clearInterval(queuePoll);
 // delete temp queue and exchange
   //app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
   //app.amqp.deleteExchange(tempqueue);

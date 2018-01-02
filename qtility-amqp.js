@@ -83,7 +83,7 @@ amqp(app, amqpSettings).connect(function () {
 });
 
 function handlePersist() {
-  app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message) {
+  app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message, messageCount) {
     if (error) return app.amqp.reject(message);
 
     if (!content) {
@@ -91,6 +91,7 @@ function handlePersist() {
       return app.amqp.reject(message);
     }
 
+    console.log("messageCount:",messageCount);
     console.log("received new", program.sourcequeue);
 
     var messageOptions = {

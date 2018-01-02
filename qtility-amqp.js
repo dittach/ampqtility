@@ -10,6 +10,9 @@ const async = require('async');
 var queuePoll;
 var app = Object;
 
+var enableDebugMsgs = false;
+var modName = 'qtility-amqp.js:';
+
 program
   .version('0.0.1')
   .option('-h, --host <host>', 'AMQP Host')
@@ -84,6 +87,11 @@ amqp(app, amqpSettings).connect(function () {
 });
 
 function handlePersist() {
+  var debugThisFunction = true;
+  var fName = 'handlePersist():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
+
   app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message, messageCount) {
     if (error) return app.amqp.reject(message);
 
@@ -126,6 +134,10 @@ function handlePersist() {
 }
 
 function createTempQueue(callback) {
+  var debugThisFunction = true;
+  var fName = 'createTempQueue():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
   app.amqp.assertExchange(tempqueue, exchangeOptions.type).then(function (ex) {
     app.amqp.assertQueue(tempqueue, {
       durable: true,
@@ -174,6 +186,10 @@ function getQueueCount(queueName, emptyCallback) {
 }
 
 function endWhenEmpty() {
+  var debugThisFunction = true;
+  var fName = 'endWhenEmpty():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
   getQueueCount(program.sourcequeue, function(messageCount){
     console.log('endWhenEmpty(), messageCount:', messageCount);
 
@@ -206,6 +222,10 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
 }
 
 function moveItemsBack(err) {
+  var debugThisFunction = true;
+  var fName = 'moveItemsBack():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
   // subscribe to tempqueue as a consumer
   if (err) {
     console.log('Unable to unsubscribe from source queue', program.sourcequeue);
@@ -220,6 +240,10 @@ function moveItemsBack(err) {
 
 
 function subscribeToTempQueue(callback) {
+  var debugThisFunction = true;
+  var fName = 'subscribeToTempQueue():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
 
 
   app.amqpHelpers.subscribeDirect(tempqueue, function (error, content, message, messageCount) {
@@ -254,6 +278,10 @@ function subscribeToTempQueue(callback) {
 
 
 function endMoveBackWhenEmpty() {
+  var debugThisFunction = true;
+  var fName = 'endMoveBackWhenEmpty():';
+
+  if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
   getQueueCount(tempqueue, function(messageCount){
     console.log('endMoveBackWhenEmpty(), messageCount:', messageCount);
 

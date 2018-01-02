@@ -103,13 +103,16 @@ function handlePersist() {
     if (message.properties !== null) {
       _.extend(messageOptions, message.properties);
     }
-    isQueueEmpty();
-    /*
-    try {
-      app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
-    } catch (e) {
-      console.log("qtility", "Unable to publish on", tempqueue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
-    }*/
+
+    if (messageCount>0) {
+      
+      try {
+        app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+      } catch (e) {
+        console.log("qtility", "Unable to publish on", tempqueue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
+      }
+
+    }
   });
 }
 
@@ -132,10 +135,38 @@ function createTempQueue(callback) {
   callback(null);
 }
 
-function isQueueEmpty(queueName) {
-  var queueResult = app.amqp.assertQueue(queueName, {durable: true,autoDelete: false});
-  console.log('queueResult:',queueResult);
+function getQueueCount(queueName, emptyCallback) {
+  var options = options || {};
+  options = _.omit(options, "type");
+
+  async.waterfall([
+    buildDefaults,
+    initQueue,
+    isEmpty
+  ], function (err, result) {
+    emptyCallback(result);
+  });
+
+  function buildDefaults(connection, callback) {
+    callback(null, _.extend({
+      durable: true,
+      autoDelete: false
+    }, options));
+  }
+
+  function initQueue(queueOptions, callback) {
+    callback(null, app.amqp.assertQueue(queueName, queueOptions));
+  }
+
+  function isEmpty(ok, callback) {
+    ok.then(function(results) {
+      callback(results.messageCount);
+    });
+  }
+
+
 }
+
 
 
 process.on('SIGTERM', cleanupAndShutdown);

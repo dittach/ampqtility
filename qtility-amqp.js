@@ -87,7 +87,7 @@ function handlePersist() {
   app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message, messageCount) {
     if (error) return app.amqp.reject(message);
 
-    if (queuePoll===undefined) {
+    if (queuePoll === undefined) {
       queuePoll = setInterval(endWhenEmpty, 5000);
     }
 
@@ -96,7 +96,7 @@ function handlePersist() {
       return app.amqp.reject(message);
     }
 
-    console.log("messageCount:",messageCount);
+    console.log("messageCount:", messageCount);
     console.log("received new", program.sourcequeue);
 
     var messageOptions = {
@@ -108,10 +108,9 @@ function handlePersist() {
     if (message.properties !== null) {
       _.extend(messageOptions, message.properties);
     }
-    _.extend(messageOptions, {deliveryMode: 2});
+    _.extend(messageOptions, { deliveryMode: 2 });
 
-    if (messageCount>0) {
-
+    if (messageCount > 0) {
       try {
         app.amqp.publish(tempqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
         app.amqp.ack(message, false);
@@ -119,7 +118,9 @@ function handlePersist() {
         console.log("qtility", "Unable to publish on", tempqueue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
         app.amqp.reject(message);
       }
-
+    } else {
+      console.log('No messages found. Exiting.');
+      cleanupAndShutdown();
     }
   });
 }
@@ -177,6 +178,7 @@ function endWhenEmpty() {
     console.log('endWhenEmpty(), messageCount:', messageCount);
 
     if (messageCount===0) {
+      if (queuePoll!==undefined) { clearInterval(queuePoll); }
       moveItemsBack();
       //cleanupAndShutdown();
     }
@@ -184,9 +186,58 @@ function endWhenEmpty() {
 }
 
 function moveItemsBack() {
+  // subscribe to tempqueue as a consumer
+  subscribeToTempQueue(function(){
 
+  });
+  // publish back to source
 }
 
+
+function subscribeToTempQueue(callback) {
+
+
+  app.amqpHelpers.subscribeDirect(tempqueue, function (error, content, message, messageCount) {
+    if (error) return app.amqp.reject(message);
+
+    if (queuePoll === undefined) {
+      queuePoll = setInterval(endMoveBackWhenEmpty, 5000);
+    }
+
+    if (!content) {
+      console.log("malformed message received on", tempqueue, content, message);
+      return app.amqp.reject(message);
+    }
+
+    console.log("messageCount:", messageCount);
+    console.log("received new", tempqueue);
+
+    if (messageCount > 0) {
+      try {
+        app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), message.properties);
+        app.amqp.ack(message, false);
+      } catch (e) {
+        console.log("qtility", "Unable to publish on", program.sourcequeue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
+        app.amqp.reject(message);
+      }
+    }
+
+  });
+
+  callback(null);
+}
+
+
+function endMoveBackWhenEmpty() {
+  getQueueCount(tempqueue, function(messageCount){
+    console.log('endMoveBackWhenEmpty(), messageCount:', messageCount);
+
+    if (messageCount===0) {
+      if (queuePoll!==undefined) { clearInterval(queuePoll); }
+      cleanupAndShutdown();
+    }
+  });
+}
 
 
 process.on('SIGTERM', cleanupAndShutdown);
@@ -197,7 +248,7 @@ process.on('message', function (message) {
 });
 
 function cleanupAndShutdown() {
-  clearInterval(queuePoll);
+  if (queuePoll!==undefined) { clearInterval(queuePoll); }
 // delete temp queue and exchange
   //app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
   //app.amqp.deleteExchange(tempqueue);

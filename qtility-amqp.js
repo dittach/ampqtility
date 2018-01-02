@@ -150,9 +150,7 @@ function getQueueCount(queueName, emptyCallback) {
     buildDefaults,
     initQueue,
     isEmpty
-  ], function (err, result) {
-    emptyCallback(result);
-  });
+  ]);
 
   function buildDefaults(callback) {
     callback(null, _.extend({
@@ -168,7 +166,7 @@ function getQueueCount(queueName, emptyCallback) {
   function isEmpty(ok, callback) {
     ok.then(function(results) {
       console.log('results:', results);
-      callback(results.messageCount);
+      emptyCallback(results.messageCount);
     });
   }
 }

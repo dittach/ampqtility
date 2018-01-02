@@ -108,6 +108,7 @@ function handlePersist() {
     if (message.properties !== null) {
       _.extend(messageOptions, message.properties);
     }
+    _.extend(messageOptions, {deliveryMode: 2});
 
     if (messageCount>0) {
 
@@ -174,7 +175,16 @@ function getQueueCount(queueName, emptyCallback) {
 function endWhenEmpty() {
   getQueueCount(program.sourcequeue, function(messageCount){
     console.log('endWhenEmpty(), messageCount:', messageCount);
+
+    if (messageCount===0) {
+      moveItemsBack();
+      //cleanupAndShutdown();
+    }
   });
+}
+
+function moveItemsBack() {
+
 }
 
 

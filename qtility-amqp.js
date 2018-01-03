@@ -332,7 +332,7 @@ function subscribeToTempQueue(callback) {
 
     app.amqpHelpers.subscribeDirect(tempqueue, function (error, content, message, messageCount) {
 
-        if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect() callback. queuePoll:', queuePoll); }
+        if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect() callback.'); }
 
         if (error) return app.amqp.reject(message);
 

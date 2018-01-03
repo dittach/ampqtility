@@ -105,11 +105,11 @@ function handleTest() {
         persistent: true
     };
     var content = {"test1":"test1"};
-    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
+    console.log('1:', app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     content = {"test2":"test2"};
-    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
+    console.log('2:', app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     content = {"test3":"test3"};
-    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
+    console.log('3:', app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     console.log('done');
     setTimeout(function() { cleanupAndShutdown(); }), 5000;
 }

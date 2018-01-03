@@ -110,7 +110,7 @@ function handleTest() {
     content = {"test3":"test3"};
     app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
     console.log('done');
-    setTimeout(5000, cleanupAndShutdown);
+    setTimeout(5000, function() { cleanupAndShutdown(); });
 }
 
 function handlePersist() {

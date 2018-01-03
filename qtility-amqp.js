@@ -99,18 +99,23 @@ if (program.op === "test") {
 }
 
 async function handleTestAsync() {
-  const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
-  const channel = await conn.createChannel();
-  
-  var content = {"test1":"test1"};
-  await channel.assertExchange(program.sourcequeue, exchangeOptions.type, {durable: true});
-  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
-  content = {"test2":"test2"};
-  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
-  content = {"test3":"test3"};
-  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
-  await channel.close();
-  await conn.close();
+    var debugThisFunction = true;
+    var fName = 'handleTestAsync():';
+
+    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called. source:', program.sourcequeue); }
+
+    const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
+    const channel = await conn.createChannel();
+
+    var content = { "test1": "test1" };
+    await channel.assertExchange(program.sourcequeue, exchangeOptions.type, { durable: true });
+    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+    content = { "test2": "test2" };
+    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+    content = { "test3": "test3" };
+    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+    await channel.close();
+    await conn.close();
 }
 
 

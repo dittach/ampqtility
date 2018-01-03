@@ -9,6 +9,7 @@ const async = require('async');
 const myamqp = require('amqplib');
 
 var queuePoll;
+var queueEndPoll;
 var app = Object;
 
 var enableDebugMsgs = true;
@@ -335,8 +336,8 @@ function subscribeToTempQueue(callback) {
 
         if (error) return app.amqp.reject(message);
 
-        if (queuePoll === undefined) {
-            queuePoll = setInterval(endMoveBackWhenEmpty, 5000);
+        if (queueEndPoll === undefined) {
+            queueEndPoll = setInterval(endMoveBackWhenEmpty, 5000);
         }
 
         if (!content) {
@@ -374,8 +375,8 @@ function endMoveBackWhenEmpty() {
         console.log('endMoveBackWhenEmpty(), messageCount:', messageCount);
 
         if (messageCount === 0) {
-            if (queuePoll !== undefined) {
-                clearInterval(queuePoll);
+            if (queueEndPoll !== undefined) {
+                clearInterval(queueEndPoll);
             }
             cleanupAndShutdown();
         }

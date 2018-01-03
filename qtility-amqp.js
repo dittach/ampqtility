@@ -279,10 +279,8 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
         if (enableDebugMsgs && debugThisFunction) {
             console.log(fName, modName, 'unbindQueue()', err, ok);
         }
-        if (err) {
-            if (enableDebugMsgs && debugThisFunction) {
-                console.log(fName, modName, 'unbindQueue(): there is an error:', err);
-            }
+        if (err & JSON.parse(err)!=='') {
+            if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindQueue(): there is an error:', err); }
             callback(err);
         }
     }).then(function () {
@@ -290,6 +288,7 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
         if (enableDebugMsgs && debugThisFunction) {
             console.log(fName, modName, 'nameless then().');
         }
+        /*
         app.amqp.unbindExchange(queueName, queueName, exchangeBindings).then(function (err, ok) {
             if (enableDebugMsgs && debugThisFunction) {
                 console.log(fName, modName, 'unbindExchange()', err, ok);
@@ -299,7 +298,8 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
             } else {
                 callback();
             }
-        }); // closes unbindExchange then
+        }); // closes unbindExchange then*/
+        callback();
     }); // closes the nameless then
 }
 

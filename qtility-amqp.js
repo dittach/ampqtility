@@ -69,6 +69,10 @@ const exchangeOptions = {
 
 require('./lib/amqp')(app, amqpSettings);
 
+if (program.op === "test") {
+    handleTestAsync();
+}
+
 amqp(app, amqpSettings).connect(function () {
     var debugThisFunction = true;
     var fName = 'amqp.copnnect():';
@@ -83,14 +87,30 @@ amqp(app, amqpSettings).connect(function () {
         } else if (program.op === "movequeues") {
             //sourcequeue
             //destqueue
-        } else if (program.op === "test") {
+        }/* else if (program.op === "test") {
             handleTest();
-        }
+        }*/
 
     });
 
     app.ready = true;
 });
+
+async function handleTestAsync() {
+  const conn = await amqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
+  const channel = await conn.createChannel();
+  
+  var content = {"test1":"test1"};
+  await channel.assertExchange(program.sourcequeue, exchangeOptions.type, {durable: true});
+  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
+  content = {"test2":"test2"};
+  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
+  content = {"test3":"test3"};
+  await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(content));
+  await channel.close();
+  await conn.close();
+}
+
 
 function handleTest() {
     var debugThisFunction = true;

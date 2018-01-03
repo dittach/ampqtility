@@ -110,7 +110,7 @@ function handleTest() {
     content = {"test3":"test3"};
     app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
     console.log('done');
-    setTime(3000, cleanupAndShutdown);
+    setTimeout(5000, cleanupAndShutdown);
 }
 
 function handlePersist() {
@@ -364,9 +364,10 @@ function cleanupAndShutdown() {
     if (queuePoll !== undefined) {
         clearInterval(queuePoll);
     }
+    
     // delete temp queue and exchange
-    //app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
-    //app.amqp.deleteExchange(tempqueue);
+    app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
+    app.amqp.deleteExchange(tempqueue);
 
     // cleanly disconnect from AMQP
     app.amqp.close();

@@ -6,6 +6,7 @@ const http = require('http');
 const fs = require('fs');
 const _ = require('lodash');
 const async = require('async');
+const myamqp = require('amqplib');
 
 var queuePoll;
 var app = Object;
@@ -98,7 +99,7 @@ if (program.op === "test") {
 }
 
 async function handleTestAsync() {
-  const conn = await app.amqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
+  const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
   const channel = await conn.createChannel();
   
   var content = {"test1":"test1"};

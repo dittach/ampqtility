@@ -71,30 +71,31 @@ require('./lib/amqp')(app, amqpSettings);
 
 if (program.op === "test") {
     handleTestAsync();
-}
+} else {
 
-amqp(app, amqpSettings).connect(function () {
-    var debugThisFunction = true;
-    var fName = 'amqp.copnnect():';
+    amqp(app, amqpSettings).connect(function () {
+        var debugThisFunction = true;
+        var fName = 'amqp.copnnect():';
 
-    if (process.send) process.send('online');
-    //do stuff
+        if (process.send) process.send('online');
+        //do stuff
 
-    createTempQueue(function () {
-        if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'createTempQueue callback. op:', program.op); }
-        if (program.op === "persist") {
-            handlePersist();
-        } else if (program.op === "movequeues") {
-            //sourcequeue
-            //destqueue
-        }/* else if (program.op === "test") {
+        createTempQueue(function () {
+            if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'createTempQueue callback. op:', program.op); }
+            if (program.op === "persist") {
+                handlePersist();
+            } else if (program.op === "movequeues") {
+                //sourcequeue
+                //destqueue
+            }/* else if (program.op === "test") {
             handleTest();
         }*/
 
-    });
+        });
 
-    app.ready = true;
-});
+        app.ready = true;
+    });
+}
 
 async function handleTestAsync() {
   const conn = await amqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');

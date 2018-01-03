@@ -346,7 +346,7 @@ function subscribeToTempQueue(callback) {
             try {
                 app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), message.properties);
                 app.amqp.ack(message, false);
-                if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect(): published and ackd.'); }
+                if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect(): published to', program.sourcequeue,'and ackd.'); }
             } catch (e) {
                 console.log("qtility", "Unable to publish on", program.sourcequeue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
                 app.amqp.reject(message);

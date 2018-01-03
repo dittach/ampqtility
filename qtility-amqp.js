@@ -208,23 +208,21 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
   var fName = 'unsubscribeFromQueueAndExchange():';
 
   if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
-  app.amqp.unbindQueue(queueName, queueName, exchangeBindings, null, function(err, ok) {
+  app.amqp.unbindQueue(queueName, queueName, exchangeBindings).then(function (err, ok) {
     if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindQueue()', err, ok); }
     if (err) {
       callback(err);
-    } else {
-      app.amqp.unbindExchange(queueName, queueName, exchangeBindings, null, function(err, ok) {
-        if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindExchange()', err, ok); }
-        if (err) {
-          callback(err);
-        } else {
-          callback();
-        }
-      });
     }
-    
-
-  });
+  }).then(function () {
+    app.amqp.unbindExchange(queueName, queueName, exchangeBindings).then(function (err, ok) {
+      if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindExchange()', err, ok); }
+      if (err) {
+        callback(err);
+      } else {
+        callback();
+      }
+    }); // closes unbindExchange then
+  }); // closes the nameless then
 }
 
 function moveItemsBack(err) {

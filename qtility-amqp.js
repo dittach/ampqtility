@@ -101,16 +101,17 @@ function handleTest() {
     var messageOptions = {
         mandatory: true,
         contentType: 'application/json',
-        deliveryMode: 2 // persistent
+        deliveryMode: 2, // persistent
+        persistent: true
     };
     var content = {"test1":"test1"};
-    app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     content = {"test2":"test2"};
-    app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     content = {"test3":"test3"};
-    app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+    console.log(app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions));
     console.log('done');
-    setTimeout(5000, function() { cleanupAndShutdown(); });
+    setTimeout(function() { cleanupAndShutdown(); }), 5000;
 }
 
 function handlePersist() {
@@ -137,14 +138,16 @@ function handlePersist() {
         var messageOptions = {
             mandatory: true,
             contentType: 'application/json',
-            deliveryMode: 2 // persistent
+            deliveryMode: 2, // persistent
+            persistent: true
         };
 
         if (message.properties !== null) {
             _.extend(messageOptions, message.properties);
         }
         _.extend(messageOptions, {
-            deliveryMode: 2
+            deliveryMode: 2,
+            persistent: true
         });
 
         if (messageCount > 0) {

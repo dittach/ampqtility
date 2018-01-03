@@ -83,7 +83,7 @@ if (program.op === "test") {
         //do stuff
 
         createTempQueue(function () {
-            if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'createTempQueue callback. op:', program.op); }
+            if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'createTempQueue callback. op:', program.op); }
             if (program.op === "persist") {
                 handlePersist();
             } else if (program.op === "movequeues") {
@@ -103,7 +103,7 @@ async function handleTestAsync() {
     var debugThisFunction = true;
     var fName = 'handleTestAsync():';
 
-    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called. source:', program.sourcequeue); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue); }
 
     const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
     const channel = await conn.createChannel();
@@ -123,7 +123,7 @@ async function handleTestAsync() {
 function handleTest() {
     var debugThisFunction = true;
     var fName = 'handleTest():';
-    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
 
     console.log('Adding 3 test messages to queue', program.sourcequeue);
     var messageOptions = {
@@ -146,7 +146,7 @@ function handlePersist() {
     var debugThisFunction = true;
     var fName = 'handlePersist():';
 
-    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
 
     app.amqpHelpers.subscribeDirect(program.sourcequeue, function (error, content, message, messageCount) {
         if (error) return app.amqp.reject(message);
@@ -197,9 +197,7 @@ function createTempQueue(callback) {
     var debugThisFunction = true;
     var fName = 'createTempQueue():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     app.amqp.assertExchange(tempqueue, exchangeOptions.type).then(function (ex) {
         app.amqp.assertQueue(tempqueue, {
             durable: true,
@@ -251,9 +249,7 @@ function endWhenEmpty() {
     var debugThisFunction = true;
     var fName = 'endWhenEmpty():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     getQueueCount(program.sourcequeue, function (messageCount) {
         console.log('endWhenEmpty(), messageCount:', messageCount);
 
@@ -273,9 +269,7 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
     var debugThisFunction = true;
     var fName = 'unsubscribeFromQueueAndExchange():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     app.amqp.unbindQueue(queueName, queueName, exchangeBindings).then(function () {
         callback();
     }).err(function(){
@@ -307,16 +301,14 @@ function moveItemsBack(err) {
     var debugThisFunction = true;
     var fName = 'moveItemsBack():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     // subscribe to tempqueue as a consumer
     if (err) {
         console.log('Unable to unsubscribe from source queue', program.sourcequeue);
         cleanupAndShutdown();
     } else {
         subscribeToTempQueue(function () {
-
+            if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeToTempQueue() callback.'); }
         });
     }
 
@@ -337,6 +329,7 @@ function subscribeToTempQueue(callback) {
         if (error) return app.amqp.reject(message);
 
         if (queueEndPoll === undefined) {
+            if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect() callback: initializing queueEndPoll setInterval'); }
             queueEndPoll = setInterval(endMoveBackWhenEmpty, 5000);
         }
 
@@ -370,7 +363,7 @@ function endMoveBackWhenEmpty() {
     var debugThisFunction = true;
     var fName = 'endMoveBackWhenEmpty():';
 
-    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     getQueueCount(tempqueue, function (messageCount) {
         console.log('endMoveBackWhenEmpty(), messageCount:', messageCount);
 

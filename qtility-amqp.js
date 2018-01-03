@@ -326,12 +326,13 @@ function subscribeToTempQueue(callback) {
     var debugThisFunction = true;
     var fName = 'subscribeToTempQueue():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
 
 
     app.amqpHelpers.subscribeDirect(tempqueue, function (error, content, message, messageCount) {
+
+        if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect() callback. queuePoll:', queuePoll); }
+
         if (error) return app.amqp.reject(message);
 
         if (queuePoll === undefined) {
@@ -347,9 +348,11 @@ function subscribeToTempQueue(callback) {
         console.log("received new", tempqueue);
 
         if (messageCount > 0) {
+            if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect(): messageCount', messageCount); }
             try {
                 app.amqp.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)), message.properties);
                 app.amqp.ack(message, false);
+                if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'subscribeDirect(): published and ackd.'); }
             } catch (e) {
                 console.log("qtility", "Unable to publish on", program.sourcequeue, exchangeBindings, "with message", JSON.stringify(message), "error:", e.message);
                 app.amqp.reject(message);
@@ -366,9 +369,7 @@ function endMoveBackWhenEmpty() {
     var debugThisFunction = true;
     var fName = 'endMoveBackWhenEmpty():';
 
-    if (enableDebugMsgs && debugThisFunction) {
-        console.log(fName, modName, 'called.');
-    }
+    if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'called.'); }
     getQueueCount(tempqueue, function (messageCount) {
         console.log('endMoveBackWhenEmpty(), messageCount:', messageCount);
 

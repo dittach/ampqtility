@@ -275,20 +275,18 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
     if (enableDebugMsgs && debugThisFunction) {
         console.log(fName, modName, 'called.');
     }
-    app.amqp.unbindQueue(queueName, queueName, exchangeBindings).then(function (err, ok) {
-        if (enableDebugMsgs && debugThisFunction) {
-            console.log(fName, modName, 'unbindQueue()', err, ok);
-        }
-        if (err & JSON.parse(err)!=='') {
-            if (enableDebugMsgs && debugThisFunction) { console.log(fName, modName, 'unbindQueue(): there is an error:', err); }
-            callback(err);
-        }
-    }).then(function () {
+    app.amqp.unbindQueue(queueName, queueName, exchangeBindings).then(function () {
+        callback();
+    }).err(function(){
+        console.log('bad times, bro.');
+    });
+    /*
+    .then(function () {
 
         if (enableDebugMsgs && debugThisFunction) {
             console.log(fName, modName, 'nameless then().');
         }
-        /*
+        
         app.amqp.unbindExchange(queueName, queueName, exchangeBindings).then(function (err, ok) {
             if (enableDebugMsgs && debugThisFunction) {
                 console.log(fName, modName, 'unbindExchange()', err, ok);
@@ -298,9 +296,10 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
             } else {
                 callback();
             }
-        }); // closes unbindExchange then*/
+        }); // closes unbindExchange then
         callback();
     }); // closes the nameless then
+    */
 }
 
 function moveItemsBack(err) {

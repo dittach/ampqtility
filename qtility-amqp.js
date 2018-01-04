@@ -221,7 +221,7 @@ async function handleTestAsync() {
 
     const numTests = (typeof program.test !== 'undefined' && program.test !== null && program.test>0)?program.test:3;
 
-    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue, ', numTests:', numTests); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue, ', program.test:', program.test, ', numTests:', numTests); }
 
     const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
     const channel = await conn.createChannel();

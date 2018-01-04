@@ -102,6 +102,7 @@ function handleMoveQueues() {
 async function moveQueues(srcqueue, destqueue, options) {
     const debugThisFunction = true;
     const fName = 'moveQueues():';
+    const consumerTag = 'qtility-' + Date.now().toString();
 
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     try {
@@ -116,7 +117,7 @@ async function moveQueues(srcqueue, destqueue, options) {
 
             //  start a timer to listen for empty
             if (typeof queuePoll === 'undefined') {
-                queuePoll = setInterval(function() { cancelWhenEmpty(srcqueue); }, 5000);
+                queuePoll = setInterval(function() { cancelWhenEmpty(srcqueue,consumerTag); }, 5000);
             }
 
             try {
@@ -148,7 +149,7 @@ async function moveQueues(srcqueue, destqueue, options) {
             }
           }, {
             noAck: false,
-            consumerTag: 'qtility'
+            consumerTag: consumerTag
           });
     
     } catch (error) {
@@ -158,7 +159,7 @@ async function moveQueues(srcqueue, destqueue, options) {
 
 
 
-function cancelWhenEmpty(queueName) {
+function cancelWhenEmpty(queueName, consumerTag) {
     const debugThisFunction = true;
     const fName = 'cancelWhenEmpty():';
 
@@ -171,7 +172,7 @@ function cancelWhenEmpty(queueName) {
                 clearInterval(queuePoll);
                 queuePoll=undefined;
             }
-            app.amqp.cancel('qtility');
+            app.amqp.cancel(consumerTag);
         }
     });
 }
@@ -212,7 +213,7 @@ function handlePersist2() {
 
 
 if (program.op === "test") {
-    handleTestAsync();
+   // handleTestAsync();
 } else if (1>2) {
 
     amqp(app, amqpSettings).connect(function () {

@@ -219,12 +219,7 @@ async function handleTestAsync() {
     const debugThisFunction = true;
     const fName = 'handleTestAsync():';
 
-    const numTests = (typeof program.test !== 'undefined' && program.test !== null && program.test === parseInt(program.test, 10) )?program.test:3;
-
-    console.log("typeof program.test !== 'undefined':", (typeof program.test !== 'undefined'));
-    console.log("program.test !== null:", (program.test !== null));
-    console.log("program.test === parseInt(program.test, 10):", (program.test === parseInt(program.test, 10)));
-
+    const numTests = (typeof program.test !== 'undefined' && program.test !== null && program.test>0)?program.test:3;
 
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue, ', numTests:', numTests); }
 

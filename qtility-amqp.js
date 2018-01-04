@@ -1,3 +1,5 @@
+import { clearInterval } from 'timers';
+
 'use strict';
 
 const program = require('commander');
@@ -9,7 +11,7 @@ const async = require('async');
 const myamqp = require('amqplib');
 
 var queuePoll;
-var queueEndPoll;
+var endingIntv;
 var app = Object;
 
 const enableDebugMsgs = true;
@@ -285,28 +287,35 @@ process.on('message', function (message) {
 
 function cleanupAndShutdown() {
     if (typeof queuePoll !== 'undefined') {
-        clearInterval(queuePoll);
-    }
-    
-    try {
-        // delete temp queue and exchange
-        app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
-        app.amqp.deleteExchange(tempqueue);
+        if (typeof endingIntv === 'undefined') {
+            endingIntv = setInterval(cleanupAndShutdown, 1000);
+        }
+    } else {
+        if (typeof queuePoll !== 'undefined') {
+            clearInterval(endingIntv);
+            endingIntv=undefined;
+        }
 
-        // cleanly disconnect from AMQP
-        app.amqp.close();
-    } catch (error) {
-        console.log('An error occurred:', error.message);
-    }
-    _.values(app.listeners).forEach(function (listener) {
-        listener && listener.stop();
-    });
+        try {
+            // delete temp queue and exchange
+            app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
+            app.amqp.deleteExchange(tempqueue);
 
-    // give some time for things to settle (IMAP disconnect may not make
-    // it in time if it has a lot of things queued up)
-    setTimeout(function () {
-        process.exit(0);
-    }, 5000);
+            // cleanly disconnect from AMQP
+            app.amqp.close();
+        } catch (error) {
+            console.log('An error occurred:', error.message);
+        }
+        _.values(app.listeners).forEach(function (listener) {
+            listener && listener.stop();
+        });
+
+        // give some time for things to settle (IMAP disconnect may not make
+        // it in time if it has a lot of things queued up)
+        setTimeout(function () {
+            process.exit(0);
+        }, 5000);
+    }
 }
 
 module.exports = app;

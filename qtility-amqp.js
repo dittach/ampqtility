@@ -68,6 +68,7 @@ const exchangeOptions = {
 
 require('./lib/amqp')(app, amqpSettings);
 
+if (enableDebugMsgs) { console.log(modName, fName, 'program.op:', program.op); }
 switch (program.op) {
     case 'test':
         handleTestAsync();
@@ -83,10 +84,14 @@ switch (program.op) {
     break;
 }
 
-async function handleMoveQueues() {
+function handleMoveQueues() {
+    const debugThisFunction = true;
+    const fName = 'handleMoveQueues():';
+
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
 
     // connect to amqp
-    amqp(app, amqpSettings).connect(function() {
+    amqp(app, amqpSettings).connect(async function() {
         await moveQueues(program.sourcequeue, program.destqueue);
         
         cleanupAndShutdown()
@@ -95,6 +100,10 @@ async function handleMoveQueues() {
 }
 
 async function moveQueues(srcqueue, destqueue, options) {
+    const debugThisFunction = true;
+    const fName = 'moveQueues():';
+
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     try {
         // check that both queues exist
         await app.amqp.checkQueue(srcqueue);

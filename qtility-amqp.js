@@ -68,7 +68,7 @@ const exchangeOptions = {
 
 require('./lib/amqp')(app, amqpSettings);
 
-if (enableDebugMsgs) { console.log(modName, fName, 'program.op:', program.op); }
+if (enableDebugMsgs) { console.log(modName, 'program.op:', program.op); }
 switch (program.op) {
     case 'test':
         handleTestAsync();

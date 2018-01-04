@@ -230,7 +230,7 @@ async function handleTestAsync() {
     await channel.assertExchange(program.sourcequeue, exchangeOptions.type, { durable: true });
 
     try {
-        for (i=0; i < numTests; i++) {
+        for (let i=0; i < numTests; i++) {
             content = { "test": "test"+i };
             await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
         }

@@ -268,17 +268,17 @@ process.on('message', function (message) {
     if (message === 'shutdown') cleanupAndShutdown();
 });
 
-async function cleanupAndShutdown() {
+function cleanupAndShutdown() {
     if (typeof queuePoll !== 'undefined') {
         clearInterval(queuePoll);
     }
     
     // delete temp queue and exchange
-    await app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
-    await app.amqp.deleteExchange(tempqueue);
+    app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
+    app.amqp.deleteExchange(tempqueue);
 
     // cleanly disconnect from AMQP
-    await app.amqp.close();
+    app.amqp.close();
 
     _.values(app.listeners).forEach(function (listener) {
         listener && listener.stop();

@@ -229,13 +229,13 @@ async function handleTestAsync() {
 
     await channel.assertExchange(program.sourcequeue, exchangeOptions.type, { durable: true });
 
-    for (i=0; i < numTests; i++) {
-        try {
+    try {
+        for (i=0; i < numTests; i++) {
             content = { "test": "test"+i };
             await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
-        } catch (error) {
-            console.log('an error:', error.message);
         }
+    } catch (error) {
+        console.log('an error:', error.message);
     }
 /*
     content = { "test2": "test2" };

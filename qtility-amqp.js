@@ -25,7 +25,7 @@ program
     .option('-o, --op <op>', 'Operation', /^(persist|movequeues|test)$/i, 'persist')
     .option('-s, --sourcequeue <sourcequeue>', 'Source Queue Name')
     .option('-d, --destqueue <destqueue>', 'Dest Queue Name')
-    .option('-t, --testamt <n>', 'Test Amount (3)', parseInt, 3)
+    .option('-t, --testamt <n>', 'Test Amount (3)', parseInt)
     .parse(process.argv);
 
 const amqp = require('./lib/amqp');

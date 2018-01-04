@@ -12,8 +12,8 @@ var queuePoll;
 var queueEndPoll;
 var app = Object;
 
-var enableDebugMsgs = true;
-var modName = 'qtility-amqp.js:';
+const enableDebugMsgs = true;
+const modName = 'qtility-amqp.js:';
 
 program
     .version('0.0.1')
@@ -45,9 +45,7 @@ if (amqpSettings.vhost.length === 0) missing_options.push("vhost");
 if (amqpSettings.login.length === 0) missing_options.push("login");
 if (amqpSettings.password.length === 0) missing_options.push("password");
 if (program.op.length === 0) missing_options.push("op");
-if (program.sourcequeue.length === 0) {
-    missing_options.push("sourcequeue");
-}
+if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 
 if (program.op === "movequeues" && program.destqueue.length === 0) {
     missing_options.push("destqueue");
@@ -68,12 +66,145 @@ const exchangeOptions = {
     confirm: true
 };
 
-
 require('./lib/amqp')(app, amqpSettings);
+
+switch (program.op) {
+    case 'test':
+        handleTestAsync();
+    break;
+    case 'persist':
+        handlePersist2();
+    break;
+    case 'movequeues':
+        handleMoveQueues();
+    break;
+    default:
+        program.outputHelp();
+    break;
+}
+
+async function handleMoveQueues() {
+
+    // connect to amqp
+    amqp(app, amqpSettings).connect(function() {
+        await moveQueues(program.sourcequeue, program.destqueue);
+        
+        cleanupAndShutdown()
+    });
+    
+}
+
+async function moveQueues(srcqueue, destqueue, options) {
+    try {
+        // check that both queues exist
+        await app.amqp.checkQueue(srcqueue);
+        await app.amqp.checkQueue(destqueue);
+
+        // consume from srcqueue
+        await app.amqp.consume(srcqueue, function (message) {
+            let content;
+            let messageOptions= {};
+
+            //  start a timer to listen for empty
+            if (typeof queuePoll === 'undefined') {
+                queuePoll = setInterval(function() { cancelWhenEmpty(srcqueue); }, 5000);
+            }
+
+            try {
+              content = JSON.parse(message.content.toString());
+            } catch (error) {
+              console.error("error parsing AMQP message", message, message.content, "on queue", srcqueue, error);
+              return error;
+            }
+
+            //  onMessage: publish to destqueue, use options if they exist
+            if (message.properties !== null) {
+                _.extend(messageOptions, message.properties);
+            }
+            if (options!==undefined && options!==null) {
+                _.extend(messageOptions, options);
+            }
+            /*
+            _.extend(messageOptions, {
+                deliveryMode: 2,
+                persistent: true
+            });*/
+            
+            try {
+                app.amqp.publish(destqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+                app.amqp.ack(message, false);
+            } catch (e) {
+                console.log("qtility", "Unable to publish on", destqueue, exchangeBindings, "with message", JSON.stringify(content), "error:", e.message);
+                app.amqp.reject(message);
+            }
+          }, {
+            noAck: false,
+            consumerTag: 'qtility'
+          });
+    
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+
+
+function cancelWhenEmpty(queueName) {
+    const debugThisFunction = true;
+    const fName = 'cancelWhenEmpty():';
+
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
+    getQueueCount(queueName, function (messageCount) {
+        if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, ', messageCount:', messageCount); }
+
+        if (messageCount === 0) {
+            if (typeof queuePoll !== 'undefined') {
+                clearInterval(queuePoll);
+                queuePoll=undefined;
+            }
+            app.amqp.cancel('qtility');
+        }
+    });
+}
+
+
+function handlePersist2() {
+    // connect to amqp
+    amqp(app, amqpSettings).connect(async function() {
+        try {
+            //create tempqueue
+            await app.amqp.assertExchange(tempqueue, exchangeOptions.type);
+            await  app.amqp.assertQueue(tempqueue, {
+                durable: true,
+                autoDelete: false,
+                confirm: true
+            });
+            await app.amqp.bindQueue(tempqueue, tempqueue, exchangeBindings);
+            
+            //move items from source to tempqueue, marking as persistent
+            await moveQueues(program.sourcequeue, tempqueue, {
+                deliveryMode: 2,
+                persistent: true
+            });
+
+            //move things from tempqueue back to source
+            await moveQueues(tempqueue, program.sourcequeue, {
+                deliveryMode: 2,
+                persistent: true
+            });
+        } catch (error) {
+            console.log(error.message);
+        }
+        
+        // clean up
+        cleanupAndShutdown()
+    });
+}
+
 
 if (program.op === "test") {
     handleTestAsync();
-} else {
+} else if (1>2) {
 
     amqp(app, amqpSettings).connect(function () {
         var debugThisFunction = true;
@@ -100,8 +231,8 @@ if (program.op === "test") {
 }
 
 async function handleTestAsync() {
-    var debugThisFunction = true;
-    var fName = 'handleTestAsync():';
+    const debugThisFunction = true;
+    const fName = 'handleTestAsync():';
 
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue); }
 
@@ -272,8 +403,6 @@ function unsubscribeFromQueueAndExchange(queueName, callback) {
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     app.amqp.cancel('qtility').then(function () {
         callback();
-    }).err(function(){
-        console.log('bad times, bro.');
     });
 }
 
@@ -365,7 +494,7 @@ process.on('message', function (message) {
 });
 
 function cleanupAndShutdown() {
-    if (queuePoll !== undefined) {
+    if (typeof queuePoll !== 'undefined') {
         clearInterval(queuePoll);
     }
     

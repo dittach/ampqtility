@@ -273,13 +273,16 @@ function cleanupAndShutdown() {
         clearInterval(queuePoll);
     }
     
-    // delete temp queue and exchange
-    app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
-    app.amqp.deleteExchange(tempqueue);
+    try {
+        // delete temp queue and exchange
+        app.amqp.deleteQueue(tempqueue,{'ifEmpty':true});
+        app.amqp.deleteExchange(tempqueue);
 
-    // cleanly disconnect from AMQP
-    app.amqp.close();
-
+        // cleanly disconnect from AMQP
+        app.amqp.close();
+    } catch (error) {
+        console.log('An error occurred:', error.message);
+    }
     _.values(app.listeners).forEach(function (listener) {
         listener && listener.stop();
     });

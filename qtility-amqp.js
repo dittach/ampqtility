@@ -25,6 +25,7 @@ program
     .option('-o, --op <op>', 'Operation', /^(persist|movequeues|test)$/i, 'persist')
     .option('-s, --sourcequeue <sourcequeue>', 'Source Queue Name')
     .option('-d, --destqueue <destqueue>', 'Dest Queue Name')
+    .option('-t, --test [test]', 'Test Amount (3)', parseInt, 3)
     .parse(process.argv);
 
 const amqp = require('./lib/amqp');
@@ -49,6 +50,9 @@ if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 
 if (program.op === "movequeues" && program.destqueue.length === 0) {
     missing_options.push("destqueue");
+}
+if (program.op === "test" && (program.test > 1000 || program.test < 1)) {
+    missing_options.push("testamount");
 }
 
 if (missing_options.length > 0) {
@@ -215,18 +219,25 @@ async function handleTestAsync() {
     const debugThisFunction = true;
     const fName = 'handleTestAsync():';
 
+    const numTests = (typeof program.test !== undefined && program.test !== null && program.test === parseInt(program.test, 10) )?program.test:3;
+
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue); }
 
     const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
     const channel = await conn.createChannel();
+    let content = {};
 
-    var content = { "test1": "test1" };
     await channel.assertExchange(program.sourcequeue, exchangeOptions.type, { durable: true });
-    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+
+    for (i=0; i < numTests; i++) {
+        content = { "test": "test"+i };
+        await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+    }
+/*
     content = { "test2": "test2" };
     await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
     content = { "test3": "test3" };
-    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );
+    await channel.publish(program.sourcequeue, exchangeBindings, new Buffer(JSON.stringify(content)) );*/
     await channel.close();
     await conn.close();
 }

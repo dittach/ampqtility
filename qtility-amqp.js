@@ -25,7 +25,7 @@ program
     .option('-o, --op <op>', 'Operation', /^(persist|movequeues|test)$/i, 'persist')
     .option('-s, --sourcequeue <sourcequeue>', 'Source Queue Name')
     .option('-d, --destqueue <destqueue>', 'Dest Queue Name')
-    .option('-t, --test [test]', 'Test Amount (3)', parseInt, 3)
+    .option('-t, --testamt [testamt]', 'Test Amount (3)', parseInt, 3)
     .parse(process.argv);
 
 const amqp = require('./lib/amqp');
@@ -51,8 +51,8 @@ if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 if (program.op === "movequeues" && program.destqueue.length === 0) {
     missing_options.push("destqueue");
 }
-if (program.op === "test" && (program.test > 1000 || program.test < 1)) {
-    missing_options.push("testamount");
+if (program.op === "test" && (program.testamt > 1000 || program.testamt < 1)) {
+    missing_options.push("testamt");
 }
 
 if (missing_options.length > 0) {
@@ -219,9 +219,9 @@ async function handleTestAsync() {
     const debugThisFunction = true;
     const fName = 'handleTestAsync():';
 
-    const numTests = (typeof program.test !== 'undefined' && program.test !== null && program.test>0)?program.test:3;
+    const numTests = (typeof program.testamt !== 'undefined' && program.testamt !== null && program.testamt>0)?program.testamt:3;
 
-    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue, ', program.test:', program.test, ', numTests:', numTests); }
+    if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called. source:', program.sourcequeue, ', program.testamt:', program.testamt, ', numTests:', numTests); }
 
     const conn = await myamqp.connect('amqp://dittach_staging:4QGe6CEZyf9q4dlzj7E47ayW@amqp.local.staging.dittach.com:5672/dittach_staging');
     const channel = await conn.createChannel();

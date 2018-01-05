@@ -119,7 +119,7 @@ async function moveQueues(srcqueue, destqueue, options) {
         await app.amqp.checkQueue(destqueue);
 
         // consume from srcqueue
-        await app.amqp.consume(srcqueue, function (message) {
+        await app.amqp.consume(srcqueue, async function (message) {
             let content;
             let messageOptions= {};
             itemitr++;

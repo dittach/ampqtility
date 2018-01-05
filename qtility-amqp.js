@@ -33,6 +33,7 @@ program
 const amqp = require('./lib/amqp');
 const amqpSettings = require('./config/amqp_config.js');
 
+
 _.extend(amqpSettings, {
     host: program.host,
     port: program.port,
@@ -109,6 +110,7 @@ async function moveQueues(srcqueue, destqueue, options) {
     const debugThisFunction = true;
     const fName = 'moveQueues():';
     const consumerTag = 'qtility-' + Date.now().toString();
+    let itemctr = 0;
 
     if (enableDebugMsgs && debugThisFunction) { console.log(modName, fName, 'called.'); }
     try {
@@ -120,6 +122,7 @@ async function moveQueues(srcqueue, destqueue, options) {
         await app.amqp.consume(srcqueue, function (message) {
             let content;
             let messageOptions= {};
+            itemitr++;
 
             //  start a timer to listen for empty
             if (typeof queuePoll === 'undefined') {
@@ -153,6 +156,11 @@ async function moveQueues(srcqueue, destqueue, options) {
                 console.log("qtility", "Unable to publish on", destqueue, exchangeBindings, "with message", JSON.stringify(content), "error:", e.message);
                 app.amqp.reject(message);
             }
+
+            if (itemctr%1000===999) {
+                console.log('Processed 1000 records, sleeping.');
+                await sleep(5000);
+            }
           }, {
             noAck: false,
             consumerTag: consumerTag
@@ -163,7 +171,9 @@ async function moveQueues(srcqueue, destqueue, options) {
     }
 }
 
-
+function sleep(millis) {
+    return new Promise(resolve => setTimeout(resolve, millis));
+}
 
 function cancelWhenEmpty(queueName, consumerTag) {
     const debugThisFunction = true;

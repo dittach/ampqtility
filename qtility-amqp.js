@@ -159,7 +159,7 @@ async function moveQueues(srcqueue, destqueue, options) {
 
             if (itemctr%1000===999) {
                 console.log('Processed 1000 records, sleeping.');
-                await sleep(5000);
+                try { await sleep(5000); } catch(err) { console.log(err); }
             }
           }, {
             noAck: false,

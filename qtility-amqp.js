@@ -54,7 +54,7 @@ if (program.sourcequeue.length === 0) { missing_options.push("sourcequeue"); }
 if (program.op === "movequeues" && program.destqueue.length === 0) {
     missing_options.push("destqueue");
 }
-if (program.op === "test" && (program.testamt > 1000 || program.testamt < 1)) {
+if (program.op === "test" && (program.testamt > 1000000 || program.testamt < 1)) {
     missing_options.push("testamt");
 }
 

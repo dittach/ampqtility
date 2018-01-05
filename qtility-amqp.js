@@ -122,7 +122,7 @@ async function moveQueues(srcqueue, destqueue, options) {
         await app.amqp.consume(srcqueue, async function (message) {
             let content;
             let messageOptions= {};
-            itemitr++;
+            itemctr++;
 
             //  start a timer to listen for empty
             if (typeof queuePoll === 'undefined') {

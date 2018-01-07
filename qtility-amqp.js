@@ -160,7 +160,7 @@ async function moveQueues(srcqueue, destqueue, options) {
             }
 
             if (itemctr%10000===9999) {
-                console.log('Processed 10000 records, sleeping. Currently at', itemctr);
+                console.log('Processed 10000 records, sleeping. Currently at', itemctr, "moving from", srcqueue, "to", destqueue + ".");
                 try { await sleep(5000); } catch(err) { console.log(err); }
             }
           }, {

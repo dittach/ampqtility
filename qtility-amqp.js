@@ -117,11 +117,13 @@ async function moveQueues(srcqueue, destqueue, options) {
         // check that both queues exist
         await app.amqp.checkQueue(srcqueue);
         await app.amqp.checkQueue(destqueue);
+        var content;
+        var messageOptions= {};
 
         // consume from srcqueue
         await app.amqp.consume(srcqueue, async function (message) {
-            let content;
-            let messageOptions= {};
+            content = '';
+            messageOptions= {};
             itemctr++;
 
             //  start a timer to listen for empty
@@ -157,8 +159,8 @@ async function moveQueues(srcqueue, destqueue, options) {
                 app.amqp.reject(message);
             }
 
-            if (itemctr%1000===999) {
-                console.log('Processed 1000 records, sleeping.');
+            if (itemctr%10000===9999) {
+                console.log('Processed 10000 records, sleeping.');
                 try { await sleep(5000); } catch(err) { console.log(err); }
             }
           }, {

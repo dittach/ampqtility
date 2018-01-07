@@ -11,6 +11,7 @@ const async = require('async');
 const myamqp = require('amqplib');
 
 var queuePoll;
+var srslyWait;
 var endingIntv;
 var app = Object;
 
@@ -120,54 +121,62 @@ async function moveQueues(srcqueue, destqueue, options) {
         var content;
         var messageOptions= {};
 
-        // consume from srcqueue
-        await app.amqp.consume(srcqueue, async function (message) {
-            content = '';
-            messageOptions= {};
-            itemctr++;
 
-            //  start a timer to listen for empty
-            if (typeof queuePoll === 'undefined') {
-                queuePoll = setInterval(function() { cancelWhenEmpty(srcqueue,consumerTag); }, 5000);
-            }
+        if (typeof queuePoll === 'undefined') {
+            // consume from srcqueue
+            await app.amqp.consume(srcqueue, async function (message) {
+                content = '';
+                messageOptions= {};
+                itemctr++;
 
-            try {
-              content = JSON.parse(message.content.toString());
-            } catch (error) {
-              console.error("error parsing AMQP message", message, message.content, "on queue", srcqueue, error);
-              return error;
-            }
+                //  start a timer to listen for empty
+                if (typeof queuePoll === 'undefined') {
+                    queuePoll = setInterval(function() { cancelWhenEmpty(srcqueue,consumerTag); }, 5000);
+                }
 
-            //  onMessage: publish to destqueue, use options if they exist
-            if (message.properties !== null) {
-                _.extend(messageOptions, message.properties);
-            }
-            if (options!==undefined && options!==null) {
-                _.extend(messageOptions, options);
-            }
-            /*
-            _.extend(messageOptions, {
-                deliveryMode: 2,
-                persistent: true
-            });*/
-            
-            try {
-                app.amqp.publish(destqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
-                app.amqp.ack(message, false);
-            } catch (e) {
-                console.log("qtility", "Unable to publish on", destqueue, exchangeBindings, "with message", JSON.stringify(content), "error:", e.message);
-                app.amqp.reject(message);
-            }
+                try {
+                    content = JSON.parse(message.content.toString());
+                } catch (error) {
+                    console.error("error parsing AMQP message", message, message.content, "on queue", srcqueue, error);
+                    return error;
+                }
 
-            if (itemctr%10000===9999) {
-                console.log('Processed 10000 records, sleeping. Currently at', itemctr, "moving from", srcqueue, "to", destqueue + ".");
-                try { await sleep(5000); } catch(err) { console.log(err); }
+                //  onMessage: publish to destqueue, use options if they exist
+                if (message.properties !== null) {
+                    _.extend(messageOptions, message.properties);
+                }
+                if (options!==undefined && options!==null) {
+                    _.extend(messageOptions, options);
+                }
+                /*
+                _.extend(messageOptions, {
+                    deliveryMode: 2,
+                    persistent: true
+                });*/
+                
+                try {
+                    app.amqp.publish(destqueue, exchangeBindings, new Buffer(JSON.stringify(content)), messageOptions);
+                    app.amqp.ack(message, false);
+                } catch (e) {
+                    console.log("qtility", "Unable to publish on", destqueue, exchangeBindings, "with message", JSON.stringify(content), "error:", e.message);
+                    app.amqp.reject(message);
+                }
+
+                if (itemctr%10000===9999) {
+                    console.log('Processed 10000 records, sleeping. Currently at', itemctr, "moving from", srcqueue, "to", destqueue + ".");
+                    try { await sleep(5000); } catch(err) { console.log(err); }
+                }
+            }, {
+                noAck: false,
+                consumerTag: consumerTag
+            });
+        
+        } else {
+            if (typeof srslyWait === 'undefined') {
+                srslyWait = setInterval(function() { moveQueues(srcqueue, destqueue, options) }, 5000);
             }
-          }, {
-            noAck: false,
-            consumerTag: consumerTag
-          });
-    
+        }
+
     } catch (error) {
         console.log(error.message);
     }

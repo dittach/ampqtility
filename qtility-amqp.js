@@ -68,7 +68,7 @@ if (missing_options.length > 0) {
 
 const timestamp = Date.now().toString();
 const tempqueue = 'qtility.temp.' + timestamp;
-var exchangeBindings = (program.route.length !== 0)?program.route:'#';
+var exchangeBindings = (typeof program.route !== 'undefined' && program.route.length !== 0)?program.route:'#';
 const exchangeOptions = {
     type: 'topic',
     durable: true,

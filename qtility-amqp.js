@@ -30,6 +30,7 @@ program
     .option('-d, --destqueue <destqueue>', 'Dest Exchange/Queue Name')
     .option('-r, --route <route>', 'Routing Key [optional]')
     .option('-t, --testamt <n>', 'Test Amount (3)', parseInt)
+    .option('-x, --disablecheck', 'Disable destination verification (for use with exchanges)')
     .parse(process.argv);
 
 const amqp = require('./lib/amqp');
@@ -118,7 +119,7 @@ async function moveQueues(srcqueue, destqueue, options) {
     try {
         // check that both queues exist
         await app.amqp.checkQueue(srcqueue);
-        await app.amqp.checkQueue(destqueue);
+        if (!program.disablecheck) { await app.amqp.checkQueue(destqueue); }
         var content;
         var messageOptions= {};
 

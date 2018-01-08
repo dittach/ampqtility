@@ -27,7 +27,8 @@ program
     .option('-x, --password <password>', 'Password')
     .option('-o, --op <op>', 'Operation', /^(persist|movequeues|test)$/i, 'persist')
     .option('-s, --sourcequeue <sourcequeue>', 'Source Queue Name')
-    .option('-d, --destqueue <destqueue>', 'Dest Queue Name')
+    .option('-d, --destqueue <destqueue>', 'Dest Exchange/Queue Name')
+    .option('-r, --route <route>', 'Routing Key [optional]')
     .option('-t, --testamt <n>', 'Test Amount (3)', parseInt)
     .parse(process.argv);
 
@@ -66,7 +67,7 @@ if (missing_options.length > 0) {
 
 const timestamp = Date.now().toString();
 const tempqueue = 'qtility.temp.' + timestamp;
-var exchangeBindings = '#';
+var exchangeBindings = (program.route.length !== 0)?program.route:'#';
 const exchangeOptions = {
     type: 'topic',
     durable: true,
